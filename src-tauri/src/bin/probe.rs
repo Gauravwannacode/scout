@@ -127,6 +127,17 @@ Openings filtered out: {}", summary.join(" · "));
         }
     }
 
+    match &result.brief {
+        Some(text) => println!("
+--- THE BRIEF ---
+{text}
+"),
+        None => println!("
+--- THE BRIEF ---
+(none written) {}
+", result.brief_error.as_deref().unwrap_or("")),
+    }
+
     let legendary = result.items.iter().filter(|i| i.badge == "legendary").count();
     let worth = result.items.iter().filter(|i| i.badge == "worth-knowing").count();
     println!("\nBadges: {legendary} legendary · {worth} worth knowing · {} radar",

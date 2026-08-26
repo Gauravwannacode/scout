@@ -70,16 +70,36 @@ judged. Partial fallback used to be invisible because `provisional_scores` only
 went true when *everything* failed — news succeeding is not evidence that
 openings did.
 
+**7. Settings, tray tooltip, and the daily brief** — a settings panel behind
+the footer (Groq keys one per line, Gemini key, start-with-Windows toggle); the
+tray tooltip now names the next alarm and how far off it is; and the daily
+brief is finally written — the "anchor script" that reads the whole day rather
+than one item at a time.
+
+## Why the brief nearly shipped broken
+
+`gpt-oss` reasons before answering, and that reasoning counts against
+`max_tokens`. At 400 the reasoning consumed the entire budget and `content`
+came back empty with `finish_reason: "length"` — an HTTP 200 carrying nothing.
+It now runs at 1200 tokens with `reasoning_effort: "low"`.
+
+It was invisible at first because every failure path was a silent
+`else { continue }`. `brief_error` now records exactly which key and model
+failed and why, the same fix applied earlier to scoring. Groq writes the brief
+by default so it works with the keys already configured; a Gemini key, if set,
+is preferred for its longer context.
+
 ## Known gaps
 
 - **A full sweep takes ~2 minutes** because of the rate-limit pacing. Fine in
   the background; slow if triggered by hand from the Refresh button.
-- **The tray tooltip is static.** It reads "Scout" rather than the next alarm
-  or current task.
-- **Autostart is wired but never enabled.** The plugin is registered and
-  permitted; nothing calls `enable()` yet, so it needs a settings toggle.
-- `/ask` advisor not built.
-- No settings screen: API keys must be edited in `settings.json` by hand.
+- `/ask` advisor not built — the last item from the original plan.
+- **The settings panel is verified structurally, not clicked through.** The
+  browser path correctly refuses (desktop-only) and the field names now match
+  the Rust struct exactly, but the real fields have not been exercised in the
+  Tauri window.
+- **Alarm audio is proven non-silent by test, not by ear.** `cargo run --bin
+  ring` plays it; the tone's samples are asserted to peak above 0.2.
 
 ## Commands
 

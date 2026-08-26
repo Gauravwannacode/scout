@@ -14,6 +14,8 @@ interface PipelineResult {
   scoreError: string | null;
   rawCount: number;
   storyCount: number;
+  brief: string | null;
+  briefError: string | null;
 }
 
 export interface RefreshOutcome {
@@ -81,6 +83,21 @@ export async function refreshNews(): Promise<RefreshOutcome> {
   }
 
   await repo.putItems(result.items);
+
+  // One brief per day; a later run the same day replaces it.
+  if (result.brief) {
+    const now = new Date();
+    await repo.putBrief({
+      date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+      body: result.brief,
+      generatedAt: now.toISOString(),
+      leadItemId: result.items[0]?.id ?? null,
+    });
+  } else if (result.briefError) {
+    // Never silent: a brief that stops being written should be visible.
+    console.warn("no brief written:", result.briefError);
+  }
+
   localStorage.setItem(LAST_RUN_KEY, new Date().toISOString());
 
   const deadSources = Object.entries(result.counts)

@@ -19,6 +19,8 @@ export interface Store {
   alarms: Alarm[];
   sessions: FocusSession[];
   items: Item[];
+  /** Today's brief, or null when none has been written. */
+  brief: string | null;
 
   addTask(title: string, dueAt?: string | null): Promise<void>;
   toggleTask(id: string): Promise<void>;
@@ -59,6 +61,7 @@ export function useStore(): Store {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [sessions, setSessions] = useState<FocusSession[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [brief, setBrief] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<RefreshOutcome | null>(null);
 
@@ -72,17 +75,19 @@ export function useStore(): Store {
     let alive = true;
     (async () => {
       await ensureSeeded();
-      const [a, t, s, i] = await Promise.all([
+      const [a, t, s, i, b] = await Promise.all([
         repo.listAlarms(),
         repo.listTasks(),
         repo.listSessions(weekAgo()),
         repo.listItems(),
+        repo.getBrief(todayIso()),
       ]);
       if (!alive) return;
       setAlarms(a);
       setTasks(t);
       setSessions(s);
       setItems(i);
+      setBrief(b?.body ?? null);
       setReady(true);
     })();
     return () => {
@@ -106,7 +111,10 @@ export function useStore(): Store {
   // event to catch runs that happen while the app sits in the tray.
   useEffect(() => {
     const pull = async () => {
-      if ((await drainPendingItems()) > 0) setItems(await repo.listItems());
+      if ((await drainPendingItems()) > 0) {
+        setItems(await repo.listItems());
+        setBrief((await repo.getBrief(todayIso()))?.body ?? null);
+      }
     };
     void pull();
     return onBackgroundRefresh(() => {
@@ -171,7 +179,10 @@ export function useStore(): Store {
       setLastRefresh(outcome);
       // Offline or failed runs leave the cached items alone rather than
       // blanking the page.
-      if (outcome.ok) setItems(await repo.listItems());
+      if (outcome.ok) {
+        setItems(await repo.listItems());
+        setBrief((await repo.getBrief(todayIso()))?.body ?? null);
+      }
     } finally {
       setRefreshing(false);
     }
@@ -186,6 +197,7 @@ export function useStore(): Store {
     alarms,
     sessions,
     items,
+    brief,
     addTask,
     toggleTask,
     removeTask,

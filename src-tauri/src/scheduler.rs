@@ -223,6 +223,8 @@ async fn tick(app: &AppHandle) {
         }
     }
 
+    refresh_tooltip(app, &alarms);
+
     // --- deadline reminders ---
     let deadlines = state.deadlines.lock().unwrap().clone();
     for deadline in &deadlines {
@@ -289,8 +291,76 @@ async fn tick(app: &AppHandle) {
     }
 }
 
+/// The soonest upcoming alarm, as a tray-tooltip line.
+///
+/// The tray icon is the only part of Scout visible when the window is hidden,
+/// so it should answer the one question worth asking at a glance: what is next.
+fn tooltip_text(alarms: &[AlarmSpec], now: DateTime<Local>) -> String {
+    let mut soonest: Option<(DateTime<Local>, &AlarmSpec)> = None;
+
+    for alarm in alarms.iter().filter(|a| a.enabled) {
+        let Some((h, m)) = alarm.at.split_once(':') else {
+            continue;
+        };
+        let (Ok(h), Ok(m)) = (h.parse::<u32>(), m.parse::<u32>()) else {
+            continue;
+        };
+
+        // Look ahead a week: enough to find the next occurrence of any weekly
+        // repeat, and to roll a daily alarm over to tomorrow.
+        for day in 0..8 {
+            let Some(candidate) = (now + Duration::days(day))
+                .date_naive()
+                .and_hms_opt(h, m, 0)
+                .and_then(|naive| naive.and_local_timezone(Local).single())
+            else {
+                continue;
+            };
+            if candidate <= now {
+                continue;
+            }
+            if !alarm.days.is_empty()
+                && !alarm.days.contains(&candidate.weekday().num_days_from_sunday())
+            {
+                continue;
+            }
+            if soonest.as_ref().is_none_or(|(best, _)| candidate < *best) {
+                soonest = Some((candidate, alarm));
+            }
+            break;
+        }
+    }
+
+    match soonest {
+        None => "Scout — no alarms set".to_string(),
+        Some((at, alarm)) => {
+            let mins = (at - now).num_minutes().max(0);
+            let when = if mins < 60 {
+                format!("in {mins}m")
+            } else if mins < 60 * 24 {
+                format!("in {}h {}m", mins / 60, mins % 60)
+            } else {
+                at.format("%a %H:%M").to_string()
+            };
+            let label = if alarm.label.trim().is_empty() {
+                "Alarm"
+            } else {
+                alarm.label.trim()
+            };
+            format!("Scout — {label} at {} ({when})", alarm.at)
+        }
+    }
+}
+
+fn refresh_tooltip(app: &AppHandle, alarms: &[AlarmSpec]) {
+    if let Some(tray) = app.tray_by_id("main") {
+        let _ = tray.set_tooltip(Some(tooltip_text(alarms, Local::now())));
+    }
+}
+
 #[tauri::command]
-pub fn sync_alarms(state: tauri::State<'_, SchedulerState>, alarms: Vec<AlarmSpec>) {
+pub fn sync_alarms(app: AppHandle, state: tauri::State<'_, SchedulerState>, alarms: Vec<AlarmSpec>) {
+    refresh_tooltip(&app, &alarms);
     state.set_alarms(alarms);
 }
 
@@ -317,6 +387,43 @@ mod tests {
     /// 2026-08-24 is a Monday.
     fn monday_at(h: u32, m: u32, s: u32) -> DateTime<Local> {
         Local.with_ymd_and_hms(2026, 8, 24, h, m, s).unwrap()
+    }
+
+    #[test]
+    fn the_tooltip_names_the_next_alarm() {
+        // The tray icon is all that is visible when the window is hidden, so
+        // it should answer "what is next" rather than just saying the app name.
+        let alarms = vec![alarm("06:30", vec![], true)];
+        let text = tooltip_text(&alarms, monday_at(5, 0, 0));
+        assert!(text.contains("06:30"), "got: {text}");
+        assert!(text.contains("Wake"), "got: {text}");
+        assert!(text.contains("in 1h 30m"), "got: {text}");
+    }
+
+    #[test]
+    fn the_tooltip_ignores_disabled_alarms() {
+        let alarms = vec![alarm("06:30", vec![], false)];
+        assert_eq!(tooltip_text(&alarms, monday_at(5, 0, 0)), "Scout — no alarms set");
+    }
+
+    #[test]
+    fn the_tooltip_picks_the_soonest_of_several() {
+        let mut later = alarm("22:00", vec![], true);
+        later.id = "a2".into();
+        later.label = "Wind down".into();
+        let alarms = vec![later, alarm("06:30", vec![], true)];
+        let text = tooltip_text(&alarms, monday_at(5, 0, 0));
+        assert!(text.contains("Wake"), "should pick 06:30 over 22:00, got: {text}");
+    }
+
+    #[test]
+    fn a_weekly_alarm_rolls_to_its_next_matching_day() {
+        // Monday 05:00, alarm repeats Wednesdays only.
+        let alarms = vec![alarm("06:30", vec![3], true)];
+        let text = tooltip_text(&alarms, monday_at(5, 0, 0));
+        assert!(text.contains("06:30"), "got: {text}");
+        // Two days out, so it should read as a weekday and time, not minutes.
+        assert!(text.contains("Wed"), "got: {text}");
     }
 
     #[test]

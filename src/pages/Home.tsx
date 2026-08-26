@@ -110,7 +110,28 @@ export default function HomePage({ store, go }: { store: Store; go(p: Page): voi
 
       {/* the wide panel */}
       {lead ? <LeadPanel item={lead} onAdd={() => store.addTask(lead.title, null)} /> : <LeadEmpty />}
+
+      {/* The day read as a whole, under the one story that leads it. */}
+      {store.brief && <Brief text={store.brief} />}
     </div>
+  );
+}
+
+/**
+ * The anchor script.
+ *
+ * Set in the serif face and given real line-height: this is the one block on
+ * the page meant to be read as prose rather than scanned, and it should look
+ * unlike the cards around it.
+ */
+function Brief({ text }: { text: string }) {
+  return (
+    <section className="mt-3.5 rounded-[18px] border border-line bg-panel-2 px-6 py-5">
+      <span className="font-mono text-[9.5px] tracking-[0.17em] text-faint uppercase">
+        The day
+      </span>
+      <p className="mt-3 max-w-[68ch] font-serif text-[16.5px] leading-[1.62] text-cream">{text}</p>
+    </section>
   );
 }
 

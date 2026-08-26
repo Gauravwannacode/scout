@@ -1,3 +1,4 @@
+pub mod brief;
 pub mod cluster;
 pub mod prefilter;
 pub mod reach;
@@ -53,6 +54,11 @@ pub struct PipelineResult {
     pub story_count: usize,
     /// Openings dropped by the rules pass, keyed by reason.
     pub filtered: HashMap<String, usize>,
+    /// The day read as a whole. None when there was nothing to say, or no
+    /// model available to say it — a quiet absence, never an error.
+    pub brief: Option<String>,
+    /// Why no brief was written, when one was expected.
+    pub brief_error: Option<String>,
 }
 
 /// Big *and* barely covered. The rare combination worth interrupting him for.
@@ -91,6 +97,8 @@ pub async fn run() -> PipelineResult {
             raw_count,
             story_count: 0,
             filtered: HashMap::new(),
+            brief: None,
+            brief_error: None,
         };
     }
 
@@ -146,6 +154,9 @@ pub async fn run() -> PipelineResult {
     // Significance is the sort key, full stop.
     items.sort_by(|a, b| b.significance.cmp(&a.significance));
 
+    // Written after ranking so the brief reads the day in the order he will.
+    let (brief, brief_error) = brief::write_brief(&items, &cfg).await;
+
     PipelineResult {
         story_count: items.len(),
         items,
@@ -157,6 +168,8 @@ pub async fn run() -> PipelineResult {
         model_scored: outcome.model_scored,
         raw_count,
         filtered,
+        brief,
+        brief_error,
     }
 }
 

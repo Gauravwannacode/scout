@@ -4,6 +4,7 @@ import { cx } from "./components/ui";
 import { useStore } from "./lib/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useTimer } from "./lib/time";
+import Settings from "./components/Settings";
 import { isDesktop } from "./lib/sqliteRepo";
 import HomePage from "./pages/Home";
 import NewsPage from "./pages/News";
@@ -53,6 +54,7 @@ const PAGES: { id: Page; label: string; icon: ReactNode }[] = [
 export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [online, setOnline] = useState(navigator.onLine);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const store = useStore();
 
   // A completed focus session is worth recording even if the app is closed
@@ -140,6 +142,13 @@ export default function App() {
 
       <footer className="flex items-center gap-2 border-t border-line pt-3 font-mono text-[10px] text-faint">
         <span>Scout</span>
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="cursor-pointer font-mono text-[10px] tracking-[0.1em] text-faint uppercase hover:text-cream"
+        >
+          Settings
+        </button>
         <span className="ml-auto flex items-center gap-1.5">
           <i
             className={cx(
@@ -150,6 +159,8 @@ export default function App() {
           {online ? "online" : "offline — everything but news still works"}
         </span>
       </footer>
+
+      {settingsOpen && <Settings onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }
