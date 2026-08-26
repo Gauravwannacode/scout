@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Chip, Empty, Section, PageTitle, cx } from "../components/ui";
 import type { Store } from "../lib/store";
+import { hostOf, openStory } from "../lib/open";
 import { todaysTasks } from "../lib/store";
 import type { Task } from "../types";
 import { relativeTo, useNow } from "../lib/time";
@@ -116,6 +117,9 @@ function TaskComposer({ onAdd }: { onAdd(title: string): void }) {
 
 function TaskRow({ task, store, now }: { task: Task; store: Store; now: Date }) {
   const done = task.status === "done";
+  // Present only for tasks created by accepting an opening, and only while
+  // that item is still in the store.
+  const source = task.itemId ? store.items.find((i) => i.id === task.itemId) : undefined;
   const due = task.dueAt ? new Date(task.dueAt) : null;
 
   return (
@@ -135,13 +139,29 @@ function TaskRow({ task, store, now }: { task: Task; store: Store; now: Date }) 
           done ? "border-faint bg-faint" : "border-line-2 hover:border-clay",
         )}
       />
-      <p className={cx("text-[13.5px] leading-tight", done && "text-faint line-through")}>
+      <p
+        className={cx(
+          "mr-auto text-[13.5px] leading-tight",
+          done && "text-faint line-through",
+        )}
+      >
         {task.title}
       </p>
+      {source && (
+        // An accepted opening should lead back to where it came from —
+        // otherwise the task is a line of text with nowhere to go.
+        <button
+          onClick={() => void openStory(source.url)}
+          title={`Opens ${hostOf(source.url)} in your browser`}
+          className="flex-none cursor-pointer rounded-full border border-line-2 px-2.5 py-1 font-mono text-[9.5px] tracking-[0.1em] text-muted uppercase transition-colors hover:border-cream hover:text-cream"
+        >
+          Open
+        </button>
+      )}
       <button
         onClick={() => store.removeTask(task.id)}
         title="Delete task"
-        className="ml-auto cursor-pointer font-mono text-[10px] text-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-cream"
+        className="cursor-pointer font-mono text-[10px] text-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-cream"
       >
         Delete
       </button>

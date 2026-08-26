@@ -22,7 +22,7 @@ export interface Store {
   /** Today's brief, or null when none has been written. */
   brief: string | null;
 
-  addTask(title: string, dueAt?: string | null): Promise<void>;
+  addTask(title: string, dueAt?: string | null, itemId?: string | null): Promise<void>;
   toggleTask(id: string): Promise<void>;
   removeTask(id: string): Promise<void>;
 
@@ -122,12 +122,18 @@ export function useStore(): Store {
     });
   }, []);
 
-  const addTask = useCallback(async (title: string, dueAt: string | null = null) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    await repo.addTask({ title: trimmed, dueAt, status: "open", itemId: null });
-    setTasks(await repo.listTasks());
-  }, []);
+  const addTask = useCallback(
+    async (title: string, dueAt: string | null = null, itemId: string | null = null) => {
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      // Keeping itemId is what lets an accepted opening link back to its
+      // source later. Without it the task is just a line of text and the
+      // "openings accepted" count can never be anything but zero.
+      await repo.addTask({ title: trimmed, dueAt, status: "open", itemId });
+      setTasks(await repo.listTasks());
+    },
+    [],
+  );
 
   const toggleTask = useCallback(
     async (id: string) => {

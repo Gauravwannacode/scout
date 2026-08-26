@@ -1,5 +1,6 @@
 import { Button, Chip, Empty, cx } from "../components/ui";
 import type { Store } from "../lib/store";
+import { hostOf, openStory } from "../lib/open";
 import { todaysTasks } from "../lib/store";
 import type { Item } from "../types";
 import { fmtClock, relativeTo, useNextAlarm, useNow } from "../lib/time";
@@ -109,7 +110,7 @@ export default function HomePage({ store, go }: { store: Store; go(p: Page): voi
       </div>
 
       {/* the wide panel */}
-      {lead ? <LeadPanel item={lead} onAdd={() => store.addTask(lead.title, null)} /> : <LeadEmpty />}
+      {lead ? <LeadPanel item={lead} onAdd={() => store.addTask(lead.title, lead.deadlineAt, lead.id)} /> : <LeadEmpty />}
 
       {/* The day read as a whole, under the one story that leads it. */}
       {store.brief && <Brief text={store.brief} />}
@@ -183,9 +184,15 @@ function LeadPanel({ item, onAdd }: { item: Item; onAdd(): void }) {
         <Chip>
           {item.source} · {item.corroborations === 1 ? "1 source" : `${item.corroborations} sources`}
         </Chip>
-        <Button variant="primary" onClick={onAdd}>
-          Add to to-do
+        {/* Reading the source is the point of the panel, so it leads. */}
+        <Button
+          variant="primary"
+          onClick={() => void openStory(item.url)}
+          title={`Opens ${hostOf(item.url)} in your browser`}
+        >
+          Read it
         </Button>
+        <Button onClick={onAdd}>Add to to-do</Button>
       </div>
     </article>
   );

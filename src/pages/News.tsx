@@ -1,25 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import { Button, Chip, Empty, Section, cx } from "../components/ui";
-import { isDesktop } from "../lib/sqliteRepo";
+import { hostOf, openStory } from "../lib/open";
 import type { Store } from "../lib/store";
 import type { Item } from "../types";
 
 const OPENING_KINDS = new Set(["job", "internship", "hackathon", "oss", "grant", "company"]);
-
-/** Opens a story in the real browser rather than inside the app window. */
-async function openStory(url: string) {
-  if (!url) return;
-  if (isDesktop()) {
-    try {
-      await openUrl(url);
-      return;
-    } catch (e) {
-      console.error("could not open the story", e);
-    }
-  }
-  window.open(url, "_blank", "noopener");
-}
 
 /**
  * Three sections, never a wall.
@@ -172,7 +157,7 @@ export default function NewsPage({ store }: { store: Store }) {
               <Button variant="primary" onClick={() => openStory(current.url)}>
                 Read
               </Button>
-              <Button onClick={() => store.addTask(current.title)}>Add to to-do</Button>
+              <Button onClick={() => store.addTask(current.title, current.deadlineAt, current.id)}>Add to to-do</Button>
             </div>
           </article>
         ) : (
@@ -281,7 +266,7 @@ function OpeningCard({ item, store }: { item: Item; store: Store }) {
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="primary" onClick={() => store.addTask(item.title, item.deadlineAt)}>
+        <Button variant="primary" onClick={() => store.addTask(item.title, item.deadlineAt, item.id)}>
           Accept
         </Button>
         <Button onClick={() => openStory(item.url)}>Open</Button>
@@ -304,13 +289,6 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return "—";
-  }
-}
 
 /** Days remaining reads better than a date when the point is urgency. */
 function formatDeadline(iso: string | null): string {
