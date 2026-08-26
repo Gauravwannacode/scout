@@ -1,0 +1,47 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+# Two binaries exist (app, probe), so `cargo run` needs to know the default.
+default-run = "app"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.11.3", features = ["tray-icon", "image-png"] }
+tauri-plugin-log = "2"
+tauri-plugin-sql = { version = "2.4.0", features = ["sqlite"] }
+tauri-plugin-notification = "2.3.3"
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+# Alarm audio, generated in-process so it rings with the window closed.
+rodio = { version = "0.22", default-features = false, features = ["playback"] }
+tauri-plugin-opener = "2"
+tokio = { version = "1.53.1", features = ["time", "rt", "rt-multi-thread", "macros", "sync"] }
+futures = "0.3.34"
+chrono = { version = "0.4.45", features = ["serde"] }
+feed-rs = "2.4.0"
+scraper = "0.27.0"
+uuid = { version = "1.20.0", features = ["v4"] }
+reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls", "http2", "gzip"] }
+
+# Standalone source checker: `cargo run --bin probe`. Verifies every adapter
+# against its live endpoint without launching the app.
+[[bin]]
+name = "probe"
+path = "src/bin/probe.rs"

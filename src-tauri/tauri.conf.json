@@ -1,0 +1,64 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Scout",
+  "version": "0.1.0",
+  "identifier": "dev.gaurav.scout",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Scout",
+        "width": 1060,
+        "height": 760,
+        "minWidth": 480,
+        "minHeight": 560,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "theme": "Dark",
+        "backgroundColor": "#131211",
+        "label": "main"
+      },
+      {
+        "label": "mini",
+        "title": "Scout",
+        "width": 260,
+        "height": 108,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "shadow": true,
+        "transparent": false,
+        "theme": "Dark",
+        "backgroundColor": "#131211",
+        "url": "index.html?window=mini"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "msi",
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "shortDescription": "Daily AI and software news, a clock, and your to-do list.",
+    "longDescription": "Scout reads AI and software news, surfaces the single story worth your attention plus the openings that follow from it, and doubles as the clock, timer and alarm you study by. Everything except fetching news works offline."
+  }
+}

@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* Fonts are bundled, not fetched — the app must render identically offline. */
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource/manrope/400.css";
+@import "@fontsource/manrope/500.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/700.css";
+
+@theme {
+  --color-void: #131211;
+  --color-panel: #1c1a18;
+  --color-panel-2: #232019;
+  --color-panel-3: #2b2723;
+  --color-line: #302b26;
+  --color-line-2: #3d3730;
+
+  --color-cream: #ede9df;
+  --color-muted: #8f887c;
+  --color-faint: #645e56;
+
+  --color-clay: #d97757;
+  --color-clay-hot: #e89272;
+  --color-clay-deep: #8a4530;
+
+  --color-sage: #7e9481;
+
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --radius-bub: 18px;
+  --radius-sm2: 12px;
+}
+
+:root {
+  /* Clay at low alpha. Used often enough to be worth a token. */
+  --clay-wash: rgba(217, 119, 87, 0.11);
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-void);
+  background-image:
+    radial-gradient(740px 400px at 80% -8%, rgba(217, 119, 87, 0.09), transparent 68%),
+    radial-gradient(600px 360px at 4% 2%, rgba(126, 148, 129, 0.045), transparent 66%);
+  background-attachment: fixed;
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* A desktop app should not feel like a web page: no text selection on
+   chrome, no drag-ghosting on images, no native focus ring on mouse click. */
+body {
+  user-select: none;
+  cursor: default;
+}
+input,
+textarea,
+[contenteditable] {
+  user-select: text;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 100px;
+  border: 3px solid var(--color-void);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
