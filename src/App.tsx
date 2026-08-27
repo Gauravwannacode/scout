@@ -5,6 +5,7 @@ import { useStore } from "./lib/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useTimer } from "./lib/time";
 import Settings from "./components/Settings";
+import Ask from "./components/Ask";
 import { isDesktop } from "./lib/sqliteRepo";
 import HomePage from "./pages/Home";
 import NewsPage from "./pages/News";
@@ -55,6 +56,7 @@ export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [online, setOnline] = useState(navigator.onLine);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
   const store = useStore();
 
   // A completed focus session is worth recording even if the app is closed
@@ -144,6 +146,13 @@ export default function App() {
         <span>Scout</span>
         <button
           type="button"
+          onClick={() => setAskOpen(true)}
+          className="cursor-pointer font-mono text-[10px] tracking-[0.1em] text-clay uppercase hover:text-clay-hot"
+        >
+          Ask
+        </button>
+        <button
+          type="button"
           onClick={() => setSettingsOpen(true)}
           className="cursor-pointer font-mono text-[10px] tracking-[0.1em] text-faint uppercase hover:text-cream"
         >
@@ -160,6 +169,7 @@ export default function App() {
         </span>
       </footer>
 
+      {askOpen && <Ask store={store} onClose={() => setAskOpen(false)} />}
       {settingsOpen && <Settings onClose={() => setSettingsOpen(false)} />}
     </div>
   );

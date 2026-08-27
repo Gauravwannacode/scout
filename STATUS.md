@@ -89,11 +89,16 @@ failed and why, the same fix applied earlier to scoring. Groq writes the brief
 by default so it works with the keys already configured; a Gemini key, if set,
 is preferred for its longer context.
 
+**8. The advisor** — `Ask` in the footer. Grounded on what Scout collected
+today plus the open to-do list, so it can say what to *skip*, which general
+chat cannot. Context is built in the frontend and passed across, because the
+database belongs to the frontend plugin and a second reader is a worse trade.
+Failures are shown, never silent.
+
 ## Known gaps
 
 - **A full sweep takes ~2 minutes** because of the rate-limit pacing. Fine in
   the background; slow if triggered by hand from the Refresh button.
-- `/ask` advisor not built — the last item from the original plan.
 - **The settings panel is verified structurally, not clicked through.** The
   browser path correctly refuses (desktop-only) and the field names now match
   the Rust struct exactly, but the real fields have not been exercised in the

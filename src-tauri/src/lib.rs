@@ -223,6 +223,7 @@ pub fn run() {
             dismiss_alarm,
             test_alarm,
             show_main,
+            pipeline::ask::ask_advisor,
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
