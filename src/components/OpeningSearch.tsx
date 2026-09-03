@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button, Chip, Empty, cx } from "./ui";
 import { hostOf, openStory } from "../lib/open";
+import { matchesCity } from "../lib/city";
 import type { Store } from "../lib/store";
 import type { Item } from "../types";
 
@@ -31,21 +32,6 @@ function closingText(iso: string | null): string | null {
   return `closes in ${days} days`;
 }
 
-/**
- * Matches the user's city against whatever the source called the place.
- *
- * A substring test on purpose: sources write "Pune", "Pune, Maharashtra" and
- * "Pune, Maharashtra, India" for the same city, and a picker would have to
- * normalise all three. Comparing loosely gets it right without a dataset.
- */
-function isNear(item: Item, city: string): boolean {
-  const c = city.trim().toLowerCase();
-  if (!c) return false;
-  if (item.isOnline === true) return false;
-  const where = (item.location ?? "").toLowerCase();
-  const text = `${where} ${item.title} ${item.summary ?? ""}`.toLowerCase();
-  return where.includes(c) || text.includes(c);
-}
 
 /**
  * Search and filter across every opening Scout has collected.
@@ -82,7 +68,7 @@ export default function OpeningSearch({ store, city }: { store: Store; city: str
         case "flagship":
           return i.source === "flagship";
         case "near":
-          return isNear(i, city);
+          return matchesCity(i.location, i.isOnline, `${i.title} ${i.summary ?? ""}`, city);
         case "online":
           return i.isOnline === true;
         case "closing": {
@@ -96,7 +82,12 @@ export default function OpeningSearch({ store, city }: { store: Store; city: str
   }, [openings, query, filter, city]);
 
   const nearCount = useMemo(
-    () => (city ? openings.filter((i) => isNear(i, city)).length : 0),
+    () =>
+      city
+        ? openings.filter((i) =>
+            matchesCity(i.location, i.isOnline, `${i.title} ${i.summary ?? ""}`, city),
+          ).length
+        : 0,
     [openings, city],
   );
 
