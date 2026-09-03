@@ -1,4 +1,5 @@
 pub mod boards;
+pub mod flagship;
 pub mod gh_opps;
 pub mod hackathons;
 pub mod hn_opps;
@@ -33,6 +34,7 @@ macro_rules! source {
 /// never provide. The boards below them are coverage, not edge.
 pub fn registry() -> Vec<(&'static str, Fetcher)> {
     vec![
+        source!("flagship", flagship::flagships),
         source!("yc", yc::companies),
         source!("launch-hn", hn_opps::launch_hn),
         source!("show-hn", hn_opps::show_hn),

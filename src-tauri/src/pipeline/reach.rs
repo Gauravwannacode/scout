@@ -76,6 +76,8 @@ mod tests {
             summary: None,
             published_at: Some(Utc::now() - Duration::hours(age_hours)),
             deadline_at: None,
+            location: None,
+            is_online: None,
             source: source.into(),
             external_id: source.into(),
             signals: ReachSignals {

@@ -152,6 +152,14 @@ pub fn cluster(items: Vec<RawItem>) -> Vec<Cluster> {
     let mut by_url: HashMap<String, usize> = HashMap::new();
 
     for (i, item) in items.iter().enumerate() {
+        // Curated programmes are distinct by construction. "Google Summer of
+        // Code" and "Google Season of Docs" share enough words to cluster, and
+        // silently losing one of a hand-picked list is worse than a duplicate.
+        if item.source == "flagship" {
+            clusters.push((vectors[i].clone(), vec![i]));
+            continue;
+        }
+
         let url_key = canonical_url(&item.url);
 
         // Exact same article, shared twice.
@@ -233,6 +241,8 @@ mod tests {
             summary: None,
             published_at: None,
             deadline_at: None,
+            location: None,
+            is_online: None,
             source: source.into(),
             external_id: format!("{source}-{title}"),
             signals: ReachSignals {

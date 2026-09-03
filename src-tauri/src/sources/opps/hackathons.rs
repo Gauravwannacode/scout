@@ -70,6 +70,7 @@ pub async fn devpost() -> SourceResult {
                 .displayed_location
                 .and_then(|l| l.location)
                 .unwrap_or_else(|| "Online".into());
+            let online = location.eq_ignore_ascii_case("online");
             let prize = h.prize_amount.as_deref().unwrap_or("");
             // Registrations are the crowding signal: a big prize with a small
             // field is a far better bet than the reverse.
@@ -107,6 +108,8 @@ pub async fn devpost() -> SourceResult {
                     .submission_period_dates
                     .as_deref()
                     .and_then(parse_devpost_range),
+                location: Some(location.clone()),
+                is_online: Some(online),
                 source: "devpost".into(),
                 external_id: h.id.to_string(),
                 signals: ReachSignals {
@@ -145,10 +148,20 @@ struct UnstopItem {
     organisation: Option<UnstopOrg>,
     #[serde(default)]
     region: Option<String>,
+    #[serde(default)]
+    address_with_country_logo: Option<UnstopAddress>,
     /// Unstop keeps the registration window nested rather than alongside the
     /// other fields; `end_regn_dt` is when applications actually close.
     #[serde(rename = "regnRequirements", default)]
     regn: Option<UnstopRegn>,
+}
+
+/// The only Indian source that reliably names a host city, which is what
+/// makes "offline hackathons near me" possible at all.
+#[derive(Debug, Deserialize)]
+struct UnstopAddress {
+    #[serde(default)]
+    city: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -171,14 +184,30 @@ pub async fn unstop() -> SourceResult {
         .data
         .into_iter()
         .filter(|i| i.regn_open.unwrap_or(1) != 0)
-        .map(|i| RawItem {
+        .map(|i| {
+            let online = i
+                .region
+                .as_deref()
+                .map(|r| r.eq_ignore_ascii_case("online"));
+            let city = i
+                .address_with_country_logo
+                .and_then(|a| a.city)
+                .filter(|c| !c.trim().is_empty());
+            let where_text = match (&city, online) {
+                (Some(c), _) => c.clone(),
+                (None, Some(true)) => "Online".to_string(),
+                _ => "India".to_string(),
+            };
+            RawItem {
             kind: "hackathon".into(),
             title: i.title,
             org: i.organisation.and_then(|o| o.name),
             url: format!("https://unstop.com/{}", i.public_url.trim_start_matches('/')),
-            summary: i.region.map(|r| format!("Unstop · {r}")),
+            summary: Some(format!("Unstop · {where_text}")),
             published_at: None,
             deadline_at: i.regn.and_then(|r| r.end_regn_dt).as_deref().and_then(parse_iso),
+            location: Some(where_text),
+            is_online: online,
             source: "unstop".into(),
             external_id: i.id.to_string(),
             signals: ReachSignals {
@@ -186,7 +215,7 @@ pub async fn unstop() -> SourceResult {
                 comments: None,
                 primary: true,
             },
-        })
+        }})
         .collect();
 
     Ok(items)
@@ -224,6 +253,12 @@ struct DevfolioSource {
     ends_at: Option<String>,
     #[serde(default)]
     is_online: Option<bool>,
+    #[serde(default)]
+    city: Option<String>,
+    #[serde(default)]
+    state: Option<String>,
+    #[serde(default)]
+    location: Option<String>,
 }
 
 /// Devfolio search is an Elasticsearch proxy, so it needs a POST body and the
@@ -262,6 +297,18 @@ pub async fn devfolio() -> SourceResult {
                 Some(false) => "In person",
                 None => "",
             };
+            // Prefer the city; the free-text location is often a full venue
+            // address, which is too long to read on a card.
+            let where_text = match (s.is_online, s.city.as_deref(), s.state.as_deref()) {
+                (Some(true), _, _) => "Online".to_string(),
+                (_, Some(c), Some(st)) if !c.is_empty() => format!("{c}, {st}"),
+                (_, Some(c), None) if !c.is_empty() => c.to_string(),
+                _ => s
+                    .location
+                    .clone()
+                    .filter(|l| !l.is_empty())
+                    .unwrap_or_else(|| "Unknown".into()),
+            };
             let window = match (s.starts_at.as_deref(), s.ends_at.as_deref()) {
                 (Some(a), Some(b)) => format!("{} → {}", &a[..10.min(a.len())], &b[..10.min(b.len())]),
                 _ => String::new(),
@@ -286,6 +333,8 @@ pub async fn devfolio() -> SourceResult {
                 published_at: None,
                 // Submission close — the date he would actually be working to.
                 deadline_at: s.ends_at.as_deref().and_then(parse_iso),
+                location: Some(where_text),
+                is_online: s.is_online,
                 source: "devfolio".into(),
                 external_id: s.uuid.unwrap_or(slug),
                 signals: ReachSignals {

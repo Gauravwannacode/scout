@@ -143,6 +143,8 @@ mod tests {
             summary: Some(summary.into()),
             published_at: None,
             deadline_at: None,
+            location: None,
+            is_online: None,
             source: "test".into(),
             external_id: "1".into(),
             signals: ReachSignals::default(),

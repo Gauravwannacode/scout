@@ -12,6 +12,11 @@ pub struct Settings {
     /// rather than dropping the whole run to the heuristic.
     pub groq_api_keys: Vec<String>,
     pub gemini_api_key: String,
+    /// The user's city, used to surface offline events near them. Free text
+    /// rather than a picker: matching is a substring test against whatever the
+    /// source calls the place, and "Pune" matching "Pune, Maharashtra" is
+    /// exactly the behaviour wanted.
+    pub city: String,
 }
 
 impl Settings {
@@ -90,6 +95,7 @@ mod tests {
     #[test]
     fn blank_and_duplicate_keys_are_ignored() {
         let s = Settings {
+            city: String::new(),
             groq_api_keys: vec![
                 "  gsk_one  ".into(),
                 "".into(),
@@ -105,6 +111,7 @@ mod tests {
     #[test]
     fn no_usable_keys_reads_as_unconfigured() {
         let s = Settings {
+            city: String::new(),
             groq_api_keys: vec!["   ".into()],
             gemini_api_key: String::new(),
         };

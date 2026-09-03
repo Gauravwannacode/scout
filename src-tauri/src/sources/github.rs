@@ -51,6 +51,8 @@ async fn for_repo(repo: &str) -> Vec<RawItem> {
                 summary: r.body.map(|b| clean_text(&b, 400)).filter(|b| !b.is_empty()),
                 published_at: r.published_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "gh-releases".into(),
                 external_id: r.id.to_string(),
                 signals: ReachSignals {

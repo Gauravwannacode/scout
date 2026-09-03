@@ -46,6 +46,8 @@ fn to_items(hits: Vec<Hit>, source: &str) -> Vec<RawItem> {
                 summary: h.story_text.map(|s| super::http::clean_text(&s, 400)),
                 published_at: h.created_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: source.into(),
                 external_id: h.object_id,
                 signals: ReachSignals {

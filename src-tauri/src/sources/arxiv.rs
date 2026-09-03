@@ -35,6 +35,8 @@ pub async fn fetch() -> SourceResult {
                 summary: e.summary.map(|s| clean_text(&s.content, 500)),
                 published_at: published,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "arxiv".into(),
                 external_id: e.id,
                 signals: ReachSignals {

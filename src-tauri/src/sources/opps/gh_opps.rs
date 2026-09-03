@@ -74,6 +74,8 @@ async fn for_language(language: &str) -> Vec<RawItem> {
                     .or_else(|| Some(format!("Good first issue in {language}, unassigned."))),
                 published_at: i.created_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "gh-issues".into(),
                 external_id: i.id.to_string(),
                 signals: ReachSignals {

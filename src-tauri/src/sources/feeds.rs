@@ -42,6 +42,8 @@ async fn parse_feed(
                 summary,
                 published_at: e.published.or(e.updated),
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: source.to_string(),
                 external_id: e.id,
                 signals: ReachSignals {
@@ -180,6 +182,8 @@ pub async fn anthropic() -> SourceResult {
             // we first see it, which is accurate enough for a daily sweep.
             published_at: None,
             deadline_at: None,
+            location: None,
+            is_online: None,
             source: "anthropic".into(),
             external_id: slug.to_string(),
             signals: ReachSignals {

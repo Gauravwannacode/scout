@@ -43,6 +43,8 @@ pub async fn daily_papers() -> SourceResult {
                 summary: row.paper.summary.map(|s| clean_text(&s, 500)),
                 published_at: row.published_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "hf-papers".into(),
                 external_id: row.paper.id,
                 signals: ReachSignals {
@@ -86,6 +88,8 @@ pub async fn trending_models() -> SourceResult {
                 summary,
                 published_at: m.created_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "hf-models".into(),
                 external_id: m.id,
                 signals: ReachSignals {

@@ -26,6 +26,9 @@ pub struct ScoredItem {
     pub summary: Option<String>,
     pub published_at: Option<String>,
     pub deadline_at: Option<String>,
+    /// Where it happens. "Near me" filtering depends entirely on this.
+    pub location: Option<String>,
+    pub is_online: Option<bool>,
     pub source: String,
     pub external_id: String,
     pub significance: u32,
@@ -140,6 +143,8 @@ pub async fn run() -> PipelineResult {
                 summary: c.lead.summary.clone(),
                 published_at: c.lead.published_at.map(|d| d.to_rfc3339()),
                 deadline_at: c.lead.deadline_at.map(|d| d.to_rfc3339()),
+                location: c.lead.location.clone(),
+                is_online: c.lead.is_online,
                 source: c.lead.source.clone(),
                 external_id: c.lead.external_id.clone(),
                 significance,

@@ -57,6 +57,17 @@ export default function App() {
   const [online, setOnline] = useState(navigator.onLine);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+  const [city, setCity] = useState("");
+
+  // Read once on mount, and again whenever Settings closes — that is the only
+  // place it can change.
+  const loadCity = useCallback(() => {
+    if (!isDesktop()) return;
+    void invoke<{ city?: string }>("get_settings")
+      .then((s) => setCity(s.city ?? ""))
+      .catch(() => {});
+  }, []);
+  useEffect(loadCity, [loadCity]);
   const store = useStore();
 
   // A completed focus session is worth recording even if the app is closed
@@ -137,7 +148,7 @@ export default function App() {
 
       <main className="min-h-0 flex-1 overflow-y-auto py-6">
         {page === "home" && <HomePage store={store} go={setPage} />}
-        {page === "news" && <NewsPage store={store} />}
+        {page === "news" && <NewsPage store={store} city={city} />}
         {page === "clock" && <ClockPage store={store} timer={timer} />}
         {page === "todo" && <TodoPage store={store} />}
       </main>
@@ -170,7 +181,14 @@ export default function App() {
       </footer>
 
       {askOpen && <Ask store={store} onClose={() => setAskOpen(false)} />}
-      {settingsOpen && <Settings onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <Settings
+          onClose={() => {
+            setSettingsOpen(false);
+            loadCity();
+          }}
+        />
+      )}
     </div>
   );
 }

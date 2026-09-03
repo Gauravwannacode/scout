@@ -114,6 +114,23 @@ Openings filtered out: {}", summary.join(" · "));
         .iter()
         .filter(|i| app_lib::sources::opps::OPENING_KINDS.contains(&i.kind.as_str()))
         .collect();
+    let offline: Vec<_> = openings
+        .iter()
+        .filter(|o| o.is_online == Some(false) && o.location.is_some())
+        .collect();
+    let flagship: Vec<_> = openings.iter().filter(|o| o.source == "flagship").collect();
+
+    println!("
+{} offline events with a real location:", offline.len());
+    for o in offline.iter().take(10) {
+        println!("  {:<24} {}", o.location.as_deref().unwrap_or("?"), truncate(&o.title, 52));
+    }
+    println!("
+{} flagship programmes:", flagship.len());
+    for f in flagship.iter() {
+        println!("  {}", truncate(&f.title, 60));
+    }
+
     let dated = openings.iter().filter(|o| o.deadline_at.is_some()).count();
     println!(
         "

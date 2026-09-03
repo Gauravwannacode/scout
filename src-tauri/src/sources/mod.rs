@@ -25,6 +25,12 @@ pub struct RawItem {
     pub published_at: Option<DateTime<Utc>>,
     /// When applications or submissions close. Only openings carry this.
     pub deadline_at: Option<DateTime<Utc>>,
+    /// Where it physically happens, when that is known. Devpost reports
+    /// everything as "Online"; the Indian platforms carry real cities, which
+    /// is what makes "near me" possible at all.
+    pub location: Option<String>,
+    /// None when the source does not say.
+    pub is_online: Option<bool>,
     pub source: String,
     /// Stable per-source id. Combined with `source` it is the dedupe key.
     pub external_id: String,

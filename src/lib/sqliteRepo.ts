@@ -52,6 +52,8 @@ interface ItemRow {
   summary: string | null;
   published_at: string | null;
   deadline_at: string | null;
+  location: string | null;
+  is_online: number | null;
   source: string;
   external_id: string;
   significance: number;
@@ -200,6 +202,9 @@ export class SqliteRepo implements Repo {
       summary: r.summary,
       publishedAt: r.published_at,
       deadlineAt: r.deadline_at,
+      location: r.location ?? null,
+      // SQLite has no boolean; 1/0/NULL maps to true/false/unknown.
+      isOnline: r.is_online === null || r.is_online === undefined ? null : r.is_online === 1,
       source: r.source,
       externalId: r.external_id,
       significance: r.significance,
@@ -217,16 +222,21 @@ export class SqliteRepo implements Repo {
       // Re-running a fetch must refresh scores rather than duplicate the row.
       await db.execute(
         `INSERT INTO item (id, kind, title, org, url, summary, published_at, deadline_at,
-           source, external_id, significance, reach, badge, why_line, corroborations, first_seen_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+           location, is_online, source, external_id, significance, reach, badge, why_line,
+           corroborations, first_seen_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
          ON CONFLICT (source, external_id) DO UPDATE SET
            significance = excluded.significance,
            reach = excluded.reach,
            badge = excluded.badge,
            why_line = excluded.why_line,
-           corroborations = excluded.corroborations`,
+           corroborations = excluded.corroborations,
+           deadline_at = excluded.deadline_at,
+           location = excluded.location,
+           is_online = excluded.is_online`,
         [
           i.id, i.kind, i.title, i.org, i.url, i.summary, i.publishedAt, i.deadlineAt,
+          i.location, i.isOnline === null ? null : i.isOnline ? 1 : 0,
           i.source, i.externalId, i.significance, i.reach, i.badge, i.whyLine,
           i.corroborations, i.firstSeenAt,
         ],

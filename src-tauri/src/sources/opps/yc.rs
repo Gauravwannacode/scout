@@ -87,6 +87,8 @@ pub async fn companies() -> SourceResult {
                 )),
                 published_at: None,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "yc".into(),
                 external_id: c.id.to_string(),
                 signals: ReachSignals {

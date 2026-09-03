@@ -38,6 +38,8 @@ pub async fn lobsters() -> SourceResult {
                     .filter(|d| !d.is_empty()),
                 published_at: s.created_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: "lobsters".into(),
                 external_id: s.short_id,
                 signals: ReachSignals {
@@ -86,6 +88,8 @@ pub async fn devto() -> SourceResult {
                 .filter(|d| !d.is_empty()),
             published_at: a.published_at,
             deadline_at: None,
+            location: None,
+            is_online: None,
             source: "devto".into(),
             external_id: a.id.to_string(),
             signals: ReachSignals {

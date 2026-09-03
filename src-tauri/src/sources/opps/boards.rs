@@ -49,6 +49,8 @@ pub async fn remoteok() -> SourceResult {
                     .filter(|d| !d.is_empty()),
                 published_at: r.date,
                 deadline_at: None,
+                location: None,
+                is_online: Some(true),
                 source: "remoteok".into(),
                 external_id: id,
                 signals: ReachSignals {
@@ -120,6 +122,8 @@ pub async fn arbeitnow() -> SourceResult {
                 .created_at
                 .and_then(|ts| Utc.timestamp_opt(ts, 0).single()),
             deadline_at: None,
+            location: None,
+            is_online: Some(true),
             source: "arbeitnow".into(),
             external_id: j.slug,
             signals: ReachSignals {
@@ -182,6 +186,9 @@ pub async fn himalayas() -> SourceResult {
                 deadline_at: j
                     .expiry_date
                     .and_then(|ts| Utc.timestamp_opt(ts, 0).single()),
+                // Himalayas is remote-only by definition.
+                location: None,
+                is_online: Some(true),
                 source: "himalayas".into(),
                 external_id: j.guid,
                 signals: ReachSignals {

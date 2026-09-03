@@ -59,6 +59,8 @@ fn to_items(hits: Vec<Hit>, source: &str, kind: &str, note: &str) -> Vec<RawItem
                 summary: Some(summary),
                 published_at: h.created_at,
                 deadline_at: None,
+                location: None,
+                is_online: None,
                 source: source.into(),
                 external_id: h.object_id,
                 signals: ReachSignals {
@@ -136,6 +138,8 @@ pub async fn who_is_hiring() -> SourceResult {
         )),
         published_at: thread.created_at,
         deadline_at: None,
+        location: None,
+        is_online: None,
         source: "hn-hiring".into(),
         external_id: thread.object_id,
         signals: ReachSignals {

@@ -95,6 +95,24 @@ chat cannot. Context is built in the frontend and passed across, because the
 database belongs to the frontend plugin and a second reader is a worse trade.
 Failures are shown, never silent.
 
+**9. Search, location and flagships** — the Openings section is now a
+searchable board: free-text search across title, org, summary, location and
+source, plus filters for Big ones / Near me / Online / Closing soon. Every row
+has an Apply button that opens the real site.
+
+Location is carried end to end (migration 002). Devpost reports everything as
+"Online", so local events come from Devfolio and Unstop, which name real
+cities — a live run found 24 offline events across India. "Near me" matches
+the configured city as a substring, because sources write "Pune", "Pune,
+Maharashtra" and "Pune, Maharashtra, India" for the same place.
+
+Seven flagship programmes (GSoC, SIH, Outreachy, LFX, MLH, Hacktoberfest,
+Season of Docs) are curated in `sources/opps/flagship.rs` with verified URLs
+and typical application months. They are not fetched: these are announced once
+and then go quiet until the window opens, so a feed-driven app always misses
+them. They carry no deadline — real dates move yearly, and a wrong one would
+fire a reminder for a date that does not exist.
+
 ## Known gaps
 
 - **A full sweep takes ~2 minutes** because of the rate-limit pacing. Fine in

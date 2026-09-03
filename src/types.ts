@@ -20,6 +20,10 @@ export interface Item {
   summary: string | null;
   publishedAt: string | null;
   deadlineAt: string | null;
+  /** Where it physically happens. Null when the source did not say. */
+  location: string | null;
+  /** Null is "unknown", which is not the same as "not online". */
+  isOnline: boolean | null;
   source: string;
   externalId: string;
   /** 0-100. How big a deal this is. The sort key — never lowered for popularity. */

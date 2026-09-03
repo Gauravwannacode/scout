@@ -14,6 +14,7 @@ import { isDesktop } from "../lib/sqliteRepo";
 interface AppSettings {
   groq_api_keys: string[];
   gemini_api_key: string;
+  city: string;
 }
 
 /**
@@ -25,6 +26,7 @@ interface AppSettings {
 export default function Settings({ onClose }: { onClose: () => void }) {
   const [groq, setGroq] = useState("");
   const [gemini, setGemini] = useState("");
+  const [city, setCity] = useState("");
   const [autostart, setAutostart] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -41,6 +43,7 @@ export default function Settings({ onClose }: { onClose: () => void }) {
         // field takes a list. One per line reads better than commas.
         setGroq((s.groq_api_keys ?? []).join("\n"));
         setGemini(s.gemini_api_key ?? "");
+        setCity(s.city ?? "");
       } catch (e) {
         console.error("could not read settings", e);
       }
@@ -63,9 +66,10 @@ export default function Settings({ onClose }: { onClose: () => void }) {
             .map((k) => k.trim())
             .filter(Boolean),
           gemini_api_key: gemini.trim(),
+          city: city.trim(),
         },
       });
-      setStatus("Saved. The next refresh uses these keys.");
+      setStatus("Saved.");
     } catch (e) {
       setStatus(`Could not save: ${e}`);
     }
@@ -139,6 +143,19 @@ export default function Settings({ onClose }: { onClose: () => void }) {
                 spellCheck={false}
                 placeholder="AIza… or AQ.…"
                 className="w-full rounded-[10px] border border-line bg-panel-2 px-3 py-2 font-mono text-[12px] text-cream outline-none focus:border-line-2"
+              />
+            </Field>
+
+            <Field
+              label="Your city"
+              hint="Used to find offline hackathons near you. Devfolio and Unstop name a real city; Devpost lists everything as online."
+            >
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                spellCheck={false}
+                placeholder="Pune"
+                className="w-full rounded-[10px] border border-line bg-panel-2 px-3 py-2 text-[13px] text-cream outline-none focus:border-line-2"
               />
             </Field>
 

@@ -22,12 +22,22 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 const DB_URL: &str = "sqlite:scout.db";
 
 fn migrations() -> Vec<Migration> {
-    vec![Migration {
-        version: 1,
-        description: "initial schema",
-        sql: include_str!("../migrations/001_init.sql"),
-        kind: MigrationKind::Up,
-    }]
+    vec![
+        Migration {
+            version: 1,
+            description: "initial schema",
+            sql: include_str!("../migrations/001_init.sql"),
+            kind: MigrationKind::Up,
+        },
+        // Added rather than folded into 001: an existing install already has
+        // that migration recorded, so editing it would never run.
+        Migration {
+            version: 2,
+            description: "item location",
+            sql: include_str!("../migrations/002_location.sql"),
+            kind: MigrationKind::Up,
+        },
+    ]
 }
 
 /// Sweeps every news source and hands the raw items back to the frontend.

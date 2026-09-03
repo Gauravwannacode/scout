@@ -503,6 +503,8 @@ mod tests {
             summary: None,
             published_at: None,
             deadline_at: deadline_days.map(|d| Utc::now() + Duration::days(d)),
+            location: None,
+            is_online: None,
             source: source.into(),
             external_id: "1".into(),
             signals: ReachSignals::default(),

@@ -245,6 +245,8 @@ mod tests {
             summary: None,
             published_at: None,
             deadline_at: deadline.map(str::to_string),
+            location: None,
+            is_online: None,
             source: "test".into(),
             external_id: "1".into(),
             significance: 80,
