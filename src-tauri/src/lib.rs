@@ -1,5 +1,6 @@
 pub mod audio;
 pub mod pipeline;
+pub mod resume;
 pub mod scheduler;
 pub mod settings;
 pub mod sources;
@@ -234,6 +235,10 @@ pub fn run() {
             test_alarm,
             show_main,
             pipeline::ask::ask_advisor,
+            resume::get_resume,
+            resume::save_resume,
+            resume::reset_resume,
+            resume::draft_outreach,
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {

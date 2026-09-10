@@ -57,6 +57,11 @@ pub fn settings_path() -> Option<PathBuf> {
 pub fn load() -> Settings {
     let mut s = settings_path()
         .and_then(|p| std::fs::read_to_string(p).ok())
+        // Notepad and PowerShell's `Set-Content -Encoding utf8` both prepend a
+        // UTF-8 BOM, and serde_json rejects it as a syntax error. This file is
+        // meant to be hand-editable, so tolerating one is the difference
+        // between a working config and an app that silently loses its keys.
+        .map(|raw| raw.trim_start_matches('\u{feff}').to_string())
         .and_then(|raw| serde_json::from_str::<Settings>(&raw).ok())
         .unwrap_or_default();
 

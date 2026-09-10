@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Outreach from "./Outreach";
 import { Button, Chip, Empty, cx } from "./ui";
 import { hostOf, openStory } from "../lib/open";
 import { matchesCity } from "../lib/city";
@@ -156,6 +157,10 @@ export default function OpeningSearch({ store, city }: { store: Store; city: str
 }
 
 function OpeningRow({ item, store }: { item: Item; store: Store }) {
+  const [reachingOut, setReachingOut] = useState(false);
+  // A hackathon has a registration form; a company has a person. Only offer
+  // the email where there is somebody to write to.
+  const emailable = ["company", "job", "internship"].includes(item.kind);
   const closing = closingText(item.deadlineAt);
   const urgent = (daysLeft(item.deadlineAt) ?? 99) <= 3;
   const flagship = item.source === "flagship";
@@ -202,8 +207,15 @@ function OpeningRow({ item, store }: { item: Item; store: Store }) {
           <Button onClick={() => store.addTask(item.title, item.deadlineAt, item.id)}>
             Save
           </Button>
+          {emailable && (
+            <Button onClick={() => setReachingOut(true)} title="Draft a cold email and a tailored resume">
+              Reach out
+            </Button>
+          )}
         </div>
       </div>
+
+      {reachingOut && <Outreach item={item} onClose={() => setReachingOut(false)} />}
     </div>
   );
 }

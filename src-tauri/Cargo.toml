@@ -39,6 +39,7 @@ feed-rs = "2.4.0"
 scraper = "0.27.0"
 uuid = { version = "1.20.0", features = ["v4"] }
 reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls", "http2", "gzip"] }
+printpdf = { version = "0.12.8", default-features = false, features = ["html"] }
 
 # Standalone source checker: `cargo run --bin probe`. Verifies every adapter
 # against its live endpoint without launching the app.
