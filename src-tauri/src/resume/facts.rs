@@ -255,9 +255,9 @@ pub fn seed_header() -> Header {
         name: "Gaurav Mehta".into(),
         headline: "Second-year CS student · builds systems in Rust, Python and TypeScript".into(),
         email: "gaurav9215600@gmail.com".into(),
-        phone: String::new(),
+        phone: "+91 82950 48105".into(),
         github: "github.com/Gauravwannacode".into(),
-        linkedin: String::new(),
+        linkedin: "linkedin.com/in/gauravmehtaa".into(),
         location: "Bangalore, India".into(),
     }
 }
@@ -328,11 +328,19 @@ mod tests {
     }
 
     #[test]
-    fn unknown_contact_details_are_blank_rather_than_invented() {
+    fn the_header_carries_real_details_not_placeholders() {
+        // These came from him directly. The point of the test is that nothing
+        // here is an invented example value.
         let h = seed_header();
-        assert!(h.phone.is_empty(), "a phone number must never be guessed");
-        assert!(h.linkedin.is_empty(), "a profile URL must never be guessed");
         assert!(!h.name.is_empty());
-        assert!(!h.email.is_empty());
+        assert!(h.email.contains('@'));
+        assert!(h.phone.starts_with("+91"), "got: {}", h.phone);
+        assert!(h.linkedin.contains("gauravmehtaa"));
+        for field in [&h.phone, &h.linkedin, &h.email] {
+            assert!(
+                !field.contains("example") && !field.contains("xxx"),
+                "placeholder left in: {field}"
+            );
+        }
     }
 }

@@ -6,6 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useTimer } from "./lib/time";
 import Settings from "./components/Settings";
 import Ask from "./components/Ask";
+import ResumeEditor from "./components/ResumeEditor";
 import { isDesktop } from "./lib/sqliteRepo";
 import HomePage from "./pages/Home";
 import NewsPage from "./pages/News";
@@ -58,6 +59,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [city, setCity] = useState("");
+  const [resumeOpen, setResumeOpen] = useState(false);
 
   // Read once on mount, and again whenever Settings closes — that is the only
   // place it can change.
@@ -164,6 +166,13 @@ export default function App() {
         </button>
         <button
           type="button"
+          onClick={() => setResumeOpen(true)}
+          className="cursor-pointer font-mono text-[10px] tracking-[0.1em] text-faint uppercase hover:text-cream"
+        >
+          Resume
+        </button>
+        <button
+          type="button"
           onClick={() => setSettingsOpen(true)}
           className="cursor-pointer font-mono text-[10px] tracking-[0.1em] text-faint uppercase hover:text-cream"
         >
@@ -181,6 +190,7 @@ export default function App() {
       </footer>
 
       {askOpen && <Ask store={store} onClose={() => setAskOpen(false)} />}
+      {resumeOpen && <ResumeEditor onClose={() => setResumeOpen(false)} />}
       {settingsOpen && (
         <Settings
           onClose={() => {

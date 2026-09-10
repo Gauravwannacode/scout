@@ -113,10 +113,32 @@ and then go quiet until the window opens, so a feed-driven app always misses
 them. They carry no deadline — real dates move yearly, and a wrong one would
 fire a reminder for a date that does not exist.
 
+**10. Cold outreach and tailored resumes** — a "Reach out" button on company,
+job and internship rows researches the company, tailors a resume, renders a
+PDF into `%APPDATA%\dev.gaurav.scoutesumes\`, and opens the mail client
+pre-filled. Nothing sends from inside Scout.
+
+The fabrication guard is structural, not a prompt. The model receives the fact
+base as ids and returns ids; the renderer draws only what it can look up. An
+invented project has no id, so it becomes a dropped line the panel reports
+rather than a lie on a document sent to a stranger.
+
+Two templates. `clean` is single-column and plain, because applicant tracking
+systems read columns across and scramble anything clever. `bold` has a
+full-bleed masthead and project cards, for a founder who reads it directly.
+Tailoring picks per company.
+
+Facts live in `resume.json` beside `settings.json` rather than SQLite —
+tailoring runs in Rust and needs them on every call, and the database belongs
+to the frontend plugin. The **Resume** button in the footer edits them;
+switching a fact off keeps it on disk but removes it from every resume.
+
 ## Known gaps
 
 - **A full sweep takes ~2 minutes** because of the rate-limit pacing. Fine in
   the background; slow if triggered by hand from the Refresh button.
+- **`mailto:` cannot attach a file.** The panel writes the PDF and offers a
+  "Show resume" button, but the attachment is a manual step.
 - **The settings panel is verified structurally, not clicked through.** The
   browser path correctly refuses (desktop-only) and the field names now match
   the Rust struct exactly, but the real fields have not been exercised in the
