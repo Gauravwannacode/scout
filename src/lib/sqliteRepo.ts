@@ -64,6 +64,39 @@ interface ItemRow {
   first_seen_at: string;
 }
 
+/** How long a cached story is kept. Older ones are re-fetchable and only add
+ * bulk to the file that has to survive an unclean shutdown. */
+const KEEP_ITEM_DAYS = 21;
+
+/**
+ * Bounds the database on the way in.
+ *
+ * The item table is a cache, so it grows without limit unless something trims
+ * it, and a write-ahead log that is never checkpointed keeps growing with it —
+ * which is exactly the pair of files a hard kill has to leave consistent.
+ * Neither step touches anything he authored: alarms, tasks and sessions are
+ * left alone regardless of age.
+ *
+ * Failures here are swallowed. Housekeeping must never be the reason the app
+ * will not open.
+ */
+async function housekeep(db: Database): Promise<void> {
+  try {
+    const cutoff = new Date(Date.now() - KEEP_ITEM_DAYS * 86400_000).toISOString();
+    await db.execute(
+      "DELETE FROM item WHERE COALESCE(published_at, first_seen_at) < $1",
+      [cutoff],
+    );
+  } catch {
+    // A pruning failure is not worth blocking startup over.
+  }
+  try {
+    await db.execute("PRAGMA wal_checkpoint(TRUNCATE)");
+  } catch {
+    // Checkpointing is opportunistic; another connection may hold a read.
+  }
+}
+
 /**
  * SQLite-backed store, used whenever the app runs in the desktop shell.
  * Same surface as LocalRepo, so no page component knows the difference.
@@ -72,7 +105,10 @@ export class SqliteRepo implements Repo {
   private dbPromise: Promise<Database> | null = null;
 
   private db(): Promise<Database> {
-    this.dbPromise ??= Database.load("sqlite:scout.db");
+    this.dbPromise ??= Database.load("sqlite:scout.db").then(async (db) => {
+      await housekeep(db);
+      return db;
+    });
     return this.dbPromise;
   }
 

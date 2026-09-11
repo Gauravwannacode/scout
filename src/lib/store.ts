@@ -15,6 +15,14 @@ const SEED_ALARMS: Omit<Alarm, "id">[] = [
 
 export interface Store {
   ready: boolean;
+  /**
+   * Why the store could not open, when it could not.
+   *
+   * A store that neither becomes ready nor says why leaves the app on its
+   * loading line forever, which is indistinguishable from a hang. Anything
+   * that stops the first read belongs on screen.
+   */
+  loadError: string | null;
   tasks: Task[];
   alarms: Alarm[];
   sessions: FocusSession[];
@@ -57,6 +65,7 @@ function ensureSeeded(): Promise<void> {
 
 export function useStore(): Store {
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [sessions, setSessions] = useState<FocusSession[]>([]);
@@ -89,7 +98,9 @@ export function useStore(): Store {
       setItems(i);
       setBrief(b?.body ?? null);
       setReady(true);
-    })();
+    })().catch((e) => {
+      if (alive) setLoadError(String(e).replace(/^Error:\s*/, ""));
+    });
     return () => {
       alive = false;
     };
@@ -196,6 +207,7 @@ export function useStore(): Store {
 
   return {
     ready,
+    loadError,
     refresh,
     refreshing,
     lastRefresh,

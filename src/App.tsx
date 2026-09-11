@@ -101,6 +101,22 @@ export default function App() {
     };
   }, []);
 
+  if (store.loadError) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
+        <p className="font-serif text-[20px] text-cream">Scout could not open its database.</p>
+        <p className="max-w-[520px] font-mono text-[11px] leading-relaxed break-words text-clay-hot">
+          {store.loadError}
+        </p>
+        <p className="max-w-[440px] text-[12.5px] leading-relaxed text-muted">
+          Your alarms and tasks are in{" "}
+          <span className="font-mono text-[11px]">%APPDATA%\dev.gaurav.scout\scout.db</span>.
+          Nothing has been deleted.
+        </p>
+      </div>
+    );
+  }
+
   if (!store.ready) {
     return <div className="flex h-full items-center justify-center text-faint">Loading…</div>;
   }
